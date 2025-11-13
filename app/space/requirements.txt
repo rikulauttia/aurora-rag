@@ -1,0 +1,6 @@
+transformers
+sentence-transformers
+faiss-cpu
+gradio
+torch
+numpy

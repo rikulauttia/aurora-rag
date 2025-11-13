@@ -1,0 +1,62 @@
+[
+  {
+    "query": "IT-ura- ja rekrymessu Turussa",
+    "doc": "Root Expo on Turussa järjestettävä IT-ura- ja rekrymessu, jossa yritykset esittäytyvät ja opiskelijat verkostoituvat.",
+    "label": 1
+  },
+  {
+    "query": "IT-ura- ja rekrymessu Turussa",
+    "doc": "Aalto-yliopiston Machine Learning, Data Science and Artificial Intelligence -maisteriohjelma keskittyy koneoppimiseen, data-analytiikkaan ja tekoälyn perusteisiin sekä sovelluksiin.",
+    "label": 0
+  },
+  {
+    "query": "72 tunnin AI-hackathon Turussa",
+    "doc": "Since AI Hackathon on 72 tunnin AI-hackathon Turussa. Tiimit rakentavat demoja yritysten haasteisiin ja voivat saada työpaikkoja.",
+    "label": 1
+  },
+  {
+    "query": "72 tunnin AI-hackathon Turussa",
+    "doc": "Root Expo on Turussa järjestettävä IT-ura- ja rekrymessu, jossa yritykset esittäytyvät ja opiskelijat verkostoituvat.",
+    "label": 0
+  },
+  {
+    "query": "Missä opiskella ML ja AI Suomessa",
+    "doc": "Aalto-yliopiston Machine Learning, Data Science and Artificial Intelligence -maisteriohjelma keskittyy koneoppimiseen, data-analytiikkaan ja tekoälyn perusteisiin sekä sovelluksiin.",
+    "label": 1
+  },
+  {
+    "query": "Missä opiskella ML ja AI Suomessa",
+    "doc": "Root Expo on Turussa järjestettävä IT-ura- ja rekrymessu, jossa yritykset esittäytyvät ja opiskelijat verkostoituvat.",
+    "label": 0
+  },
+  {
+    "query": "Aalto yliopisto koneoppiminen maisteri",
+    "doc": "Aalto-yliopiston Machine Learning, Data Science and Artificial Intelligence -maisteriohjelma keskittyy koneoppimiseen, data-analytiikkaan ja tekoälyn perusteisiin sekä sovelluksiin.",
+    "label": 1
+  },
+  {
+    "query": "Aalto yliopisto koneoppiminen maisteri",
+    "doc": "Since AI Hackathon on 72 tunnin AI-hackathon Turussa. Tiimit rakentavat demoja yritysten haasteisiin ja voivat saada työpaikkoja.",
+    "label": 0
+  },
+  {
+    "query": "rekrymessut opiskelijoille Turku",
+    "doc": "Root Expo on Turussa järjestettävä IT-ura- ja rekrymessu, jossa yritykset esittäytyvät ja opiskelijat verkostoituvat.",
+    "label": 1
+  },
+  {
+    "query": "rekrymessut opiskelijoille Turku",
+    "doc": "Aalto-yliopiston Machine Learning, Data Science and Artificial Intelligence -maisteriohjelma keskittyy koneoppimiseen, data-analytiikkaan ja tekoälyn perusteisiin sekä sovelluksiin.",
+    "label": 0
+  },
+  {
+    "query": "yrityshaasteet hackathonissa",
+    "doc": "Since AI Hackathon on 72 tunnin AI-hackathon Turussa. Tiimit rakentavat demoja yritysten haasteisiin ja voivat saada työpaikkoja.",
+    "label": 1
+  },
+  {
+    "query": "yrityshaasteet hackathonissa",
+    "doc": "Aalto-yliopiston Machine Learning, Data Science and Artificial Intelligence -maisteriohjelma keskittyy koneoppimiseen, data-analytiikkaan ja tekoälyn perusteisiin sekä sovelluksiin.",
+    "label": 0
+  }
+]
