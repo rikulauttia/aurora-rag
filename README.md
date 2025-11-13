@@ -1,168 +1,540 @@
-# AuroraRAG — Eval-First, Multilingual RAG (Local-Ready)
+# AuroraRAG
 
-**AuroraRAG** is a clean, production-lean Retrieval-Augmented Generation stack:
-- **Embeddings:** `BAAI/bge-m3` (multilingual, strong retrieval)
-- **Reranker:** `BAAI/bge-reranker-v2-m3` (multilingual cross-encoder)
-- **LLM (local optional):** Qwen2.5 7B Instruct via **Ollama** (or Llama 3.1 8B)
+**Evaluation-First, Multilingual RAG Framework with Local Deployment Support**
 
-## Why this repo?
-- **Eval-first search.** We show both **inner-product** scores and **rerank** scores.
-- **Multilingual by default.** Works well in Finnish, English, and more.
-- **Local-friendly.** Runs fully offline with Ollama + CPU FAISS.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+AuroraRAG is a production-ready Retrieval-Augmented Generation (RAG) framework designed for observable search quality, multilingual support, and flexible deployment options. Built with transparency and measurability at its core, AuroraRAG enables teams to build, evaluate, and deploy RAG systems with confidence.
+
+**Part of the Aurora Series:**  
+[AuroraRAG](https://github.com/yourusername/aurora-rag) | [Aurora SAR Change Detection](https://github.com/yourusername/aurora-sar-change)
 
 ---
 
-## Quickstart
+## Table of Contents
 
-### 1) Install
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -U pip
-pip install -r requirements.txt
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Architecture](#architecture)
+- [Getting Started](#getting-started)
+- [API Reference](#api-reference)
+- [Evaluation Framework](#evaluation-framework)
+- [Configuration](#configuration)
+- [Deployment](#deployment)
+- [Production Considerations](#production-considerations)
+- [Project Structure](#project-structure)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## Overview
+
+Modern RAG systems often provide subjectively good results but lack measurable performance indicators. AuroraRAG addresses this challenge by making search quality observable and answer generation reproducible through:
+
+- **Clear Separation of Concerns**: Distinct retrieval, reranking, and generation stages
+- **Transparent Scoring**: Inner-product similarity (FAISS) combined with cross-encoder reranking
+- **Built-in Evaluation**: Information retrieval metrics (MRR, nDCG) for continuous improvement
+- **Multilingual Excellence**: Optimized for Finnish and English with BGE-M3 model family
+- **Flexible Deployment**: Supports both cloud-based and fully offline operation
+
+### Use Cases
+
+- Internal knowledge base search
+- Policy and compliance Q&A systems
+- Technical support assistants
+- Multilingual document repositories
+- Privacy-sensitive applications requiring local deployment
+
+---
+
+## Key Features
+
+### Evaluation-First Design
+Built-in information retrieval metrics (Mean Reciprocal Rank, Normalized Discounted Cumulative Gain) enable systematic evaluation of retrieval quality and A/B testing of system components.
+
+### Multilingual Support
+Leverages BAAI's BGE-M3 model family for robust multilingual retrieval and reranking, with particular strength in Finnish and English corpora.
+
+### Local Deployment Ready
+Operates entirely offline using Ollama for local LLM inference and CPU-optimized FAISS indexing, ensuring data privacy and eliminating cloud dependencies.
+
+### Production-Ready API
+FastAPI-based REST API with comprehensive endpoints for search, answer generation, and health monitoring, ready for integration into existing systems.
+
+---
+
+## Architecture
+
+AuroraRAG implements a three-stage pipeline optimizing for both recall and precision:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Query Input                              │
+└────────────────────────┬────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    Dense Embedding Layer                         │
+│                      (BGE-M3 Encoder)                           │
+└────────────────────────┬────────────────────────────────────────┘
+                         │ Vector Representations
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   Fast Retrieval Stage                           │
+│              (FAISS Inner Product Search)                        │
+│                     Returns Top-K                                │
+└────────────────────────┬────────────────────────────────────────┘
+                         │ Candidate Passages + Similarity Scores
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   Precision Reranking                            │
+│            (BGE-reranker-v2-M3 Cross-Encoder)                   │
+└────────────────────────┬────────────────────────────────────────┘
+                         │ Reranked Results + Confidence Scores
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                  Answer Generation (Optional)                    │
+│                     (Ollama LLM / API)                          │
+└────────────────────────┬────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              Structured Response with Citations                  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-### 2) Build the index
-Uses data from `data/sample_docs/*.txt`:
+### Design Rationale
+
+- **BGE-M3 Embeddings**: State-of-the-art multilingual dense retrieval, effective across query lengths
+- **BGE-reranker-v2-M3**: Powerful cross-encoder for improving precision on top-K candidates
+- **FAISS IndexFlatIP**: Exact search baseline (upgradeable to approximate methods for scale)
+- **Evaluation Pipeline**: Quantitative metrics (MRR@K, nDCG@K) over labeled query sets
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.9 or higher
+- (Optional) Ollama for local LLM inference
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/aurora-rag.git
+   cd aurora-rag
+   ```
+
+2. **Set up virtual environment**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pip install -U pip
+   pip install -r requirements.txt
+   ```
+
+### Building the Index
+
+Initialize the FAISS index using the sample documents:
+
 ```bash
 python inference/encode_index.py
 ```
 
-### 3) (Optional) Local LLM with Ollama
-```bash
-# macOS
-brew install ollama
-ollama serve              # in a separate terminal
-ollama pull qwen2.5:7b-instruct-q4_0
+This processes documents in `data/sample_docs/` and creates the searchable index.
 
+### Local LLM Setup (Optional)
+
+For offline answer generation with Ollama:
+
+**macOS:**
+```bash
+brew install ollama
+```
+
+**Linux/Windows:**  
+Follow instructions at [ollama.ai](https://ollama.ai)
+
+**Configure and run:**
+```bash
+ollama serve  # Keep this running in a separate terminal
+ollama pull qwen2.5:7b-instruct-q4_0
+```
+
+**Set environment variables:**
+```bash
 export OLLAMA_URL=http://127.0.0.1:11434
 export OLLAMA_MODEL=qwen2.5:7b-instruct-q4_0
 ```
 
-### 4) Run the API
+### Running the API
+
+Start the FastAPI server:
+
 ```bash
 uvicorn app.server:app --host 0.0.0.0 --port 8080 --reload
 ```
 
-### 5) Test
-```bash
-# Search
-curl -s -X POST http://127.0.0.1:8080/search \
-  -H "Content-Type: application/json" \
-  -d '{"query":"Missä voin opiskella koneoppimista Suomessa?"}' | jq .
+The API will be available at `http://127.0.0.1:8080`
 
-# Answer (uses reranked hits + LLM if OLLAMA_* is set)
-curl -s -X POST http://127.0.0.1:8080/answer \
+### Quick Test
+
+**Search endpoint (retrieval + reranking):**
+```bash
+curl -X POST http://127.0.0.1:8080/search \
+  -H "Content-Type: application/json" \
+  -d '{"query":"Missä voin opiskella koneoppimista Suomessa?", "k": 5}' | jq .
+```
+
+**Answer endpoint (with LLM generation):**
+```bash
+curl -X POST http://127.0.0.1:8080/answer \
   -H "Content-Type: application/json" \
   -d '{"query":"Missä voin opiskella koneoppimista Suomessa?"}' | jq .
 ```
 
 ---
 
-## Docker
+## API Reference
 
+### Endpoints
+
+#### `POST /search`
+
+Retrieve and rerank relevant passages without LLM generation.
+
+**Request Body:**
+```json
+{
+  "query": "string",
+  "k": 5
+}
+```
+
+**Response:**
+```json
+{
+  "query": "Missä voin opiskella koneoppimista Suomessa?",
+  "hits": [
+    {
+      "doc_id": 2,
+      "text": "...relevant passage excerpt...",
+      "path": "data/sample_docs/003.txt",
+      "sim_ip": 0.41,
+      "rerank": 3.22
+    }
+  ]
+}
+```
+
+**Fields:**
+- `sim_ip`: Inner product similarity score from FAISS
+- `rerank`: Cross-encoder reranking score (higher is better)
+
+#### `POST /answer`
+
+Generate a natural language answer using retrieved passages.
+
+**Request Body:**
+```json
+{
+  "query": "string",
+  "k": 5,
+  "max_tokens": 512
+}
+```
+
+**Response:**
+```json
+{
+  "query": "...",
+  "answer": "Generated answer with citations",
+  "passages": [...],
+  "metadata": {
+    "model": "qwen2.5:7b-instruct-q4_0",
+    "retrieval_count": 5
+  }
+}
+```
+
+#### `GET /health`
+
+Health check endpoint.
+
+**Response:**
+```json
+{
+  "status": "ok"
+}
+```
+
+---
+
+## Evaluation Framework
+
+AuroraRAG includes built-in information retrieval evaluation capabilities.
+
+### Metrics
+
+- **MRR@K** (Mean Reciprocal Rank): Measures the rank quality of the first relevant result
+- **nDCG@K** (Normalized Discounted Cumulative Gain): Evaluates graded relevance distribution
+
+### Running Evaluations
+
+```bash
+python -m training.eval_ir
+```
+
+**Example Output:**
+```
+MRR@5: 0.778
+nDCG@5: 0.833
+```
+
+### Extending Evaluation
+
+1. Create labeled query-document pairs in `training/eval_ir.py`
+2. Define relevance judgments (binary or graded)
+3. Run evaluation after system modifications
+4. Compare metrics to quantify improvements
+
+**Best Practices:**
+- Maintain a diverse test set covering common query patterns
+- Include edge cases and multilingual queries
+- Re-evaluate after changes to embeddings, reranking, or chunking strategy
+- Track metrics over time to detect regressions
+
+---
+
+## Configuration
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `EMB_MODEL` | `BAAI/bge-m3` | Hugging Face embedding model identifier |
+| `RERANK_MODEL` | `BAAI/bge-reranker-v2-m3` | Cross-encoder reranking model |
+| `K` | `5` | Number of candidates retrieved from FAISS |
+| `OLLAMA_URL` | `http://127.0.0.1:11434` | Ollama API endpoint |
+| `OLLAMA_MODEL` | `qwen2.5:7b-instruct-q4_0` | LLM model for answer generation |
+
+### Customizing Models
+
+To use different models, update environment variables before starting the server:
+
+```bash
+export EMB_MODEL=sentence-transformers/paraphrase-multilingual-mpnet-base-v2
+export RERANK_MODEL=cross-encoder/ms-marco-MiniLM-L-6-v2
+```
+
+Note: Ensure models are compatible with the expected input/output format.
+
+---
+
+## Deployment
+
+### Docker Deployment
+
+**Build the image:**
 ```bash
 docker build -t aurora-rag .
-docker run -p 8000:8000 aurora-rag
-# API: http://127.0.0.1:8000
 ```
 
-The image boots FastAPI and auto-builds the FAISS index if missing.
+**Run the container:**
+```bash
+docker run -p 8000:8000 aurora-rag
+```
 
----
+The API will be accessible at `http://127.0.0.1:8000`
 
-## Hugging Face Space (Gradio Demo)
+The Docker image automatically builds the FAISS index on first run if not pre-built.
 
-**Space:** [https://huggingface.co/spaces/rikulauttia/aurora-rag-space](https://huggingface.co/spaces/rikulauttia/aurora-rag-space)
+### Hugging Face Spaces
 
-### Minimal files:
-- `app.py`
-- `requirements.txt`
-- `index.faiss` + `meta.json` (optional for instant responses; otherwise the Space can build on first run)
+For a web-based demo interface, deploy to Hugging Face Spaces:
 
-### Update the Space:
+1. Create a Space repository
+2. Include: `app.py`, `requirements.txt`, `index.faiss` (optional), `meta.json` (optional)
+3. Push to trigger automatic deployment
+
+**Update Space:**
 ```bash
 cd aurora-rag-space
-git add .
-git commit -m "Update Space"
-git push
+git add . && git commit -m "Update Space configuration" && git push
 ```
 
 ---
 
-## Project Layout
+## Production Considerations
+
+### Scaling Retrieval
+
+**Large-scale indexing (>1M documents):**
+- Replace `IndexFlatIP` with `IndexIVFFlat` or `IndexHNSWFlat`
+- Train index quantizers on representative data samples
+- Implement index sharding for distributed search
+- Persist FAISS indices to object storage (S3, GCS)
+
+### Optimizing Chunking
+
+- Target 256-512 token chunks with sentence boundary preservation
+- Include document metadata (titles, sections) for context-aware reranking
+- Experiment with overlapping chunks for long documents
+- Maintain chunk-to-source mappings for citation generation
+
+### Reranking Optimization
+
+- Batch query-passage pairs to maximize GPU utilization
+- Keep reranker models in memory (avoid reload overhead)
+- Consider INT8 quantization for throughput improvements
+- Implement caching for frequent query patterns
+
+### LLM Integration
+
+- Use structured prompts with clear instructions and formatting
+- Enforce maximum context length to prevent truncation issues
+- Implement evidence quality checks (refuse low-confidence answers)
+- Add citation validation to ensure answer grounding
+
+### Observability
+
+**Key metrics to monitor:**
+- Query latency by pipeline stage (retrieval, reranking, generation)
+- Hit rate and median rank of first relevant document
+- Cache hit rates for embeddings and results
+- Model inference times and resource utilization
+
+### Security and Privacy
+
+- Implement input validation and sanitization
+- Avoid indexing personally identifiable information (PII)
+- Add content filtering for sensitive domains
+- Use allowlists for external API calls
+- Implement rate limiting and authentication for production APIs
+
+---
+
+## Project Structure
 
 ```
 aurora-rag/
 ├── app/
-│   └── server.py          # FastAPI with /search and /answer
+│   └── server.py              # FastAPI application with REST endpoints
 ├── inference/
-│   ├── encode_index.py    # Build FAISS index
-│   ├── search.py          # BGE-m3 retriever + multilingual reranker
-│   └── generate.py        # LLM wrapper (Ollama)
+│   ├── encode_index.py        # FAISS index builder
+│   ├── search.py              # Retrieval and reranking logic
+│   └── generate.py            # LLM inference wrapper
+├── training/
+│   ├── eval_ir.py             # IR evaluation metrics (MRR, nDCG)
+│   └── (additional utilities)
 ├── data/
-│   └── sample_docs/       # Tiny example docs
-│       └── *.txt
-├── requirements.txt
-├── Dockerfile
-└── README.md
+│   └── sample_docs/           # Example document corpus
+├── requirements.txt           # Python dependencies
+├── Dockerfile                 # Container definition
+└── README.md                  # This file
 ```
 
 ---
 
-## Environment Variables
+## Troubleshooting
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `EMB_MODEL` | `BAAI/bge-m3` | Embedding model |
-| `RERANK_MODEL` | `BAAI/bge-reranker-v2-m3` | Reranking model |
-| `OLLAMA_URL` | `http://127.0.0.1:11434` | Ollama server URL |
-| `OLLAMA_MODEL` | `qwen2.5:7b-instruct-q4_0` | Ollama model name |
+### Common Issues
 
----
+**`ModuleNotFoundError` for `inference` or `training`**
 
-## Notes for Production
-
-- **Scale FAISS:** Swap `IndexFlatIP` → `IVF/HNSW` for larger corpora.
-- **Model Persistence:** Cache reranker & embedding models locally (avoid cold downloads).
-- **Observability:** Add metrics for latency, top-k distributions, hit-rate, answer-length.
-- **Guardrails:** Handle empty hits, refuse answers if context is weak.
-- **Attribution:** Add token-level attribution or chunk-level citations for UI.
-
----
-
-## Git Workflow
-
-### GitHub (main repo)
+Ensure `__init__.py` files exist in module directories and run modules with the `-m` flag:
 ```bash
-git add .
-git commit -m "Your message"
-git push
+python -m training.eval_ir
 ```
 
-### HF Space (separate clone)
+**Long initial startup time**
+
+First run downloads models from Hugging Face Hub. To mitigate:
+- Pin model versions in `requirements.txt`
+- Pre-cache models in CI/CD pipeline
+- Use Docker images with pre-downloaded models
+
+**Ollama not being used for answer generation**
+
+Verify environment variables are set:
 ```bash
-cd aurora-rag-space/
-git add .
-git commit -m "Update Space"
-git push
+echo $OLLAMA_URL
+echo $OLLAMA_MODEL
 ```
 
-> **Note:** The venv only matters when running Python. Git operations work regardless of venv activation.
+If not configured, `/answer` endpoint returns synthesized responses from retrieved passages without LLM generation.
 
----
+**FAISS index not found**
 
-## License
+Run the index builder before starting the API:
+```bash
+python inference/encode_index.py
+```
 
-MIT
+### Getting Help
+
+For additional support:
+1. Check existing [GitHub Issues](https://github.com/yourusername/aurora-rag/issues)
+2. Review API documentation at `/docs` when server is running
+3. Create a new issue with:
+   - Reproduction steps
+   - Error logs
+   - Output of `pip freeze`
+   - System information (OS, Python version)
 
 ---
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+We welcome contributions! To contribute:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/improvement`)
+3. Make your changes with clear commit messages
+4. Add or update tests as needed
+5. Submit a pull request
+
+For major changes, please open an issue first to discuss the proposed modifications.
+
+### Development Setup
+
+```bash
+pip install -r requirements-dev.txt  # If available
+pre-commit install                     # If using pre-commit hooks
+```
 
 ---
 
-## Support
+## License
 
-For issues and questions, please open an issue on GitHub.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+## Acknowledgments
+
+AuroraRAG builds upon excellent open-source projects:
+
+- [BAAI BGE Models](https://github.com/FlagOpen/FlagEmbedding) for multilingual embeddings
+- [FAISS](https://github.com/facebookresearch/faiss) for efficient similarity search
+- [Ollama](https://ollama.ai) for local LLM inference
+- [FastAPI](https://fastapi.tiangolo.com) for API framework
+
+---
+
+## Keywords
+
+`rag` `faiss` `information-retrieval` `reranking` `transformers` `fastapi` `gradio` `ollama` `multilingual` `evaluation` `bge` `semantic-search`
+
+---
+
+**Questions about implementation, scaling, or evaluation strategies?**  
+Open a [discussion](https://github.com/yourusername/aurora-rag/discussions) or reach out via GitHub Issues.
