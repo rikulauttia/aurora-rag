@@ -7,7 +7,7 @@
 AuroraRAG is a production-ready Retrieval-Augmented Generation (RAG) framework designed for observable search quality, multilingual support, and flexible deployment options. Built with transparency and measurability at its core, AuroraRAG enables teams to build, evaluate, and deploy RAG systems with confidence.
 
 **Part of the Aurora Series:**  
-[AuroraRAG](https://github.com/yourusername/aurora-rag) | [Aurora SAR Change Detection](https://github.com/yourusername/aurora-sar-change)
+[AuroraRAG](https://github.com/rikulauttia/aurora-rag) | [Aurora SAR Change Detection](https://github.com/rikulauttia/aurora-sar-change)
 
 ---
 
@@ -125,7 +125,7 @@ AuroraRAG implements a three-stage pipeline optimizing for both recall and preci
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/aurora-rag.git
+   git clone https://github.com/rikulauttia/aurora-rag.git
    cd aurora-rag
    ```
 
@@ -482,7 +482,7 @@ python inference/encode_index.py
 ### Getting Help
 
 For additional support:
-1. Check existing [GitHub Issues](https://github.com/yourusername/aurora-rag/issues)
+1. Check existing [GitHub Issues](https://github.com/rikulauttia/aurora-rag/issues)
 2. Review API documentation at `/docs` when server is running
 3. Create a new issue with:
    - Reproduction steps
@@ -537,4 +537,4 @@ AuroraRAG builds upon excellent open-source projects:
 ---
 
 **Questions about implementation, scaling, or evaluation strategies?**  
-Open a [discussion](https://github.com/yourusername/aurora-rag/discussions) or reach out via GitHub Issues.
+Open a [discussion](https://github.com/rikulauttia/aurora-rag/discussions) or reach out via GitHub Issues.
