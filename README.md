@@ -1,0 +1,1 @@
+Eval-first, explainable RAG: FAISS retrieval + LoRA cross-encoder reranker, FastAPI API, Hugging Face Space demo, IR metrics (MRR/nDCG), production-ready pipeline.
